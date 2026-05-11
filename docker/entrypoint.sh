@@ -1,4 +1,8 @@
 #!/bin/sh
+# Always print to stdout so Render log stream shows runtime errors (not only Docker build).
+echo "[entrypoint] starting $(date -u '+%Y-%m-%dT%H:%M:%SZ')"
+echo "[entrypoint] PORT=${PORT:-unset} DB_CONNECTION=${DB_CONNECTION:-unset}"
+
 set -e
 
 cd /var/www/html
