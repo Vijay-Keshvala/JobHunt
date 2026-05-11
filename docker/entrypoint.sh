@@ -38,6 +38,19 @@ elif [ -n "${MYSQL_SSL_CA_B64:-}" ]; then
   esac
 fi
 
+# PHP PDO rejects invalid CA files with "no valid certs found" — validate before artisan runs.
+if [ -n "${MYSQL_ATTR_SSL_CA:-}" ] && [ "${MYSQL_ATTR_SSL_CA:-}" = "/tmp/mysql-ssl-ca.pem" ]; then
+  if [ ! -s /tmp/mysql-ssl-ca.pem ] || ! grep -qE "BEGIN (CERTIFICATE|TRUSTED CERTIFICATE)" /tmp/mysql-ssl-ca.pem 2>/dev/null; then
+    echo ""
+    echo "ERROR: Aiven CA file at /tmp/mysql-ssl-ca.pem is empty or not valid PEM."
+    echo "Use one of:"
+    echo "  1) MYSQL_SSL_CA_B64=\$(base64 -i ca.pem | tr -d '\\n')   # single line"
+    echo "  2) MYSQL_SSL_CA_PEM with full text from Aiven (include BEGIN/END lines)."
+    echo "  3) Temporarily unset MYSQL_SSL_CA_* and set MYSQL_ATTR_SSL_VERIFY_SERVER_CERT=false in Render (debug only)."
+    exit 1
+  fi
+fi
+
 # SQLite: gitignored file is not in the image — create empty file before migrate.
 if [ "$DB_CONNECTION" = "sqlite" ]; then
   if [ ! -f database/database.sqlite ]; then
