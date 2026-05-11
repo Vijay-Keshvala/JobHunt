@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Intervention\Image\Drivers\Gd;
 
 use Intervention\Image\Drivers\AbstractFontProcessor;
+use Intervention\Image\Exceptions\FontException;
+use Intervention\Image\Geometry\Point;
 use Intervention\Image\Geometry\Rectangle;
 use Intervention\Image\Interfaces\FontInterface;
 use Intervention\Image\Interfaces\SizeInterface;
@@ -35,18 +37,31 @@ class FontProcessor extends AbstractFontProcessor
             return $box;
         }
 
+        // build full path to font file to make sure to pass absolute path to imageftbbox()
+        // because of issues with different GD version behaving differently when passing
+        // relative paths to imageftbbox()
+        $fontPath = realpath($font->filename());
+        if ($fontPath === false) {
+            throw new FontException('Font file ' . $font->filename() . ' does not exist.');
+        }
+
         // calculate box size from ttf font file with angle 0
         $box = imageftbbox(
-            $this->nativeFontSize($font),
-            0,
-            $font->filename(),
-            $text
+            size: $this->nativeFontSize($font),
+            angle: 0,
+            font_filename: $fontPath,
+            string: $text,
         );
+
+        if ($box === false) {
+            throw new FontException('Unable to calculate box size of font ' . $font->filename() . '.');
+        }
 
         // build size from points
         return new Rectangle(
-            intval(abs($box[4] - $box[0])),
-            intval(abs($box[5] - $box[1]))
+            width: intval(abs($box[6] - $box[4])), // difference of upper-left-x and upper-right-x
+            height: intval(abs($box[7] - $box[1])), // difference if upper-left-y and lower-left-y
+            pivot: new Point($box[6], $box[7]), // position of upper-left corner
         );
     }
 
@@ -72,9 +87,6 @@ class FontProcessor extends AbstractFontProcessor
 
     /**
      * Return width of a single character
-     *
-     * @param int $gdfont
-     * @return int
      */
     protected function gdCharacterWidth(int $gdfont): int
     {
@@ -83,9 +95,6 @@ class FontProcessor extends AbstractFontProcessor
 
     /**
      * Return height of a single character
-     *
-     * @param int $gdfont
-     * @return int
      */
     protected function gdCharacterHeight(int $gdfont): int
     {

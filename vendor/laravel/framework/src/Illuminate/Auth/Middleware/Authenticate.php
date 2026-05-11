@@ -52,7 +52,7 @@ class Authenticate implements AuthenticatesRequests
      *
      * @param  \Illuminate\Http\Request  $request
      * @param  \Closure  $next
-     * @param  string[]  ...$guards
+     * @param  string  ...$guards
      * @return mixed
      *
      * @throws \Illuminate\Auth\AuthenticationException
@@ -62,7 +62,6 @@ class Authenticate implements AuthenticatesRequests
         $this->authenticate($request, $guards);
 
         return $next($request);
-        
     }
 
     /**
@@ -94,7 +93,7 @@ class Authenticate implements AuthenticatesRequests
      *
      * @param  \Illuminate\Http\Request  $request
      * @param  array  $guards
-     * @return void
+     * @return never
      *
      * @throws \Illuminate\Auth\AuthenticationException
      */
@@ -105,7 +104,6 @@ class Authenticate implements AuthenticatesRequests
             $guards,
             $request->expectsJson() ? null : $this->redirectTo($request),
         );
-        
     }
 
     /**
@@ -114,14 +112,11 @@ class Authenticate implements AuthenticatesRequests
      * @param  \Illuminate\Http\Request  $request
      * @return string|null
      */
-    protected function redirectTo(Request $request) : ?string 
+    protected function redirectTo(Request $request)
     {
         if (static::$redirectToCallback) {
-            return $request->expectsJson() ? null : route('account.login');
-            // return call_user_func(static::$redirectToCallback, $request);
+            return call_user_func(static::$redirectToCallback, $request);
         }
-        
-      
     }
 
     /**

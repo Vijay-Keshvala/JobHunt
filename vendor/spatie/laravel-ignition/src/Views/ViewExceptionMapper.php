@@ -10,7 +10,7 @@ use Illuminate\View\Engines\PhpEngine;
 use Illuminate\View\ViewException;
 use ReflectionClass;
 use ReflectionProperty;
-use Spatie\Ignition\Contracts\ProvidesSolution;
+use Spatie\ErrorSolutions\Contracts\ProvidesSolution;
 use Spatie\LaravelIgnition\Exceptions\ViewException as IgnitionViewException;
 use Spatie\LaravelIgnition\Exceptions\ViewExceptionWithSolution;
 use Throwable;
@@ -104,7 +104,6 @@ class ViewExceptionMapper
             ->toArray();
 
         $traceProperty = new ReflectionProperty('Exception', 'trace');
-        $traceProperty->setAccessible(true);
         $traceProperty->setValue($exception, $trace);
     }
 
@@ -136,14 +135,11 @@ class ViewExceptionMapper
 
         if (! $compilerEngineReflection->hasProperty('lastCompiled') && $compilerEngineReflection->hasProperty('engine')) {
             $compilerEngine = $compilerEngineReflection->getProperty('engine');
-            $compilerEngine->setAccessible(true);
             $compilerEngine = $compilerEngine->getValue($this->compilerEngine);
             $lastCompiled = new ReflectionProperty($compilerEngine, 'lastCompiled');
-            $lastCompiled->setAccessible(true);
             $lastCompiled = $lastCompiled->getValue($compilerEngine);
         } else {
             $lastCompiled = $compilerEngineReflection->getProperty('lastCompiled');
-            $lastCompiled->setAccessible(true);
             $lastCompiled = $lastCompiled->getValue($this->compilerEngine);
         }
 
