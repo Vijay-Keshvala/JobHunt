@@ -16,15 +16,18 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // User::factory(10)->create();
+        $users = User::factory(5)->create();
+        $categories = Category::factory(8)->create();
+        $jobTypes = JobType::factory(5)->create();
 
-        // User::factory()->create([
-        //     'name' => 'Test User',
-        //     'email' => 'test@example.com',
-        // ]);
-        // Category::factory(10)->create();
-        // JobType::factory(10)->create();
-
-        Job::factory(25)->create();
+        foreach (range(1, 25) as $i) {
+            Job::factory()->create([
+                'user_id' => $users->random()->id,
+                'category_id' => $categories->random()->id,
+                'job_type_id' => $jobTypes->random()->id,
+                'status' => 1,
+                'isFeatured' => $i <= 6 ? 1 : 0,
+            ]);
+        }
     }
 }

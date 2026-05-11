@@ -17,15 +17,14 @@ class JobFactory extends Factory
     public function definition(): array
     {
         return [
-            'title' => fake()->name,
-            'user_id' => rand(1,3),
-            'job_type_id' => rand(1,5),
-            'category_id' => rand(1,5),
-            'vacancy' => rand(1,5),
-            'location' => fake()->city,
-            'description' => fake()->text,
-            'experience' => rand(1,10),
-            'company_name' => fake()->name,
+            'title' => fake()->jobTitle(),
+            'vacancy' => fake()->numberBetween(1, 5),
+            'location' => fake()->city(),
+            'description' => fake()->paragraphs(3, true),
+            'experience' => fake()->randomElement(['0-1 years', '1-3 years', '3-5 years', '5+ years']),
+            'company_name' => fake()->company(),
+            'status' => 1,
+            'isFeatured' => 0,
         ];
     }
 }
